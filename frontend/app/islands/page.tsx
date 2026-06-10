@@ -1,3 +1,5 @@
+import IslandPage from "@/modules/islands/IslandPage";
+
 export default function Page() {
-  return <h1>Coming Soon</h1>;
+  return <IslandPage />;
 }

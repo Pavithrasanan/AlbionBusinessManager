@@ -1,3 +1,5 @@
+import InventoryPage from "@/modules/inventory/InventoryPage";
+
 export default function Page() {
-  return <h1>Coming Soon</h1>;
+  return <InventoryPage />;
 }

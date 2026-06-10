@@ -1,3 +1,5 @@
+import SettingsPage from "@/modules/settings/SettingsPage";
+
 export default function Page() {
-  return <h1>Coming Soon</h1>;
+  return <SettingsPage />;
 }

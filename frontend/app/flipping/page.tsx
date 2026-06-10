@@ -1,3 +1,5 @@
+import FlippingPage from "@/modules/flipping/FlippingPage";
+
 export default function Page() {
-  return <h1>Coming Soon</h1>;
+  return <FlippingPage />;
 }

@@ -1,3 +1,5 @@
+import AdvisorPage from "@/modules/advisor/AdvisorPage";
+
 export default function Page() {
-  return <h1>Coming Soon</h1>;
+  return <AdvisorPage />;
 }
