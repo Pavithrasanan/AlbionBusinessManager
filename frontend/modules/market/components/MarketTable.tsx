@@ -46,7 +46,7 @@ export default function MarketTable({
               </td>
 
               <td className="p-3">
-                T{item.tier}.{item.enchantment}
+                T{item.tier}.{Math.max(0, item.enchantment - 1)}
               </td>
 
               <td className="p-3">

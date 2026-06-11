@@ -40,7 +40,7 @@ export default function MarketDetails({
         </div>
 
         <div className="rounded bg-slate-800 px-3 py-1 text-sm">
-          T{item.tier}.{item.enchantment}
+          T{item.tier}.{Math.max(0, item.enchantment - 1)}
         </div>
       </div>
 

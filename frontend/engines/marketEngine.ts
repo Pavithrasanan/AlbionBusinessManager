@@ -1,20 +1,18 @@
 import { MarketItem } from "@/types/market";
 
-export interface BestMarketOpportunity {
+export interface MarketAnalysis {
   item: string;
 
-  bestBuyCity: string;
-  bestBuyPrice: number;
+  bestBuy: MarketItem;
 
-  bestSellCity: string;
-  bestSellPrice: number;
+  bestSell: MarketItem;
 
   estimatedProfit: number;
 }
 
-export function getBestMarketOpportunity(
+export function analyzeMarket(
   items: MarketItem[]
-): BestMarketOpportunity | null {
+): MarketAnalysis | null {
   if (items.length === 0) {
     return null;
   }
@@ -35,11 +33,9 @@ export function getBestMarketOpportunity(
   return {
     item: bestBuy.displayName,
 
-    bestBuyCity: bestBuy.city,
-    bestBuyPrice: bestBuy.buyPrice,
+    bestBuy,
 
-    bestSellCity: bestSell.city,
-    bestSellPrice: bestSell.sellPrice,
+    bestSell,
 
     estimatedProfit:
       bestSell.sellPrice -
