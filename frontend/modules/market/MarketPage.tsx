@@ -20,22 +20,27 @@ export default function MarketPage() {
 
   useEffect(() => {
     async function loadData() {
-      const results = await searchMarket(search);
+      try {
+        const results = await searchMarket(search);
 
-      const filtered =
-        city === "All"
-          ? results
-          : results.filter(
-              (item) => item.city === city
-            );
+        const filtered =
+          city === "All"
+            ? results
+            : results.filter(
+                (item) => item.city === city
+              );
 
-      setItems(filtered);
+        setItems(filtered);
 
-      if (
-        filtered.length > 0 &&
-        !selectedItem
-      ) {
-        setSelectedItem(filtered[0]);
+        if (filtered.length > 0) {
+          setSelectedItem(filtered[0]);
+        } else {
+          setSelectedItem(null);
+        }
+      } catch (error) {
+        console.error(error);
+        setItems([]);
+        setSelectedItem(null);
       }
     }
 
@@ -45,14 +50,13 @@ export default function MarketPage() {
   return (
     <main className="min-h-screen bg-slate-950 p-8 text-white">
       <div className="mx-auto max-w-7xl space-y-6">
-
         <div>
           <h1 className="text-4xl font-bold">
             📊 Albion Market
           </h1>
 
           <p className="mt-2 text-slate-400">
-            Search and analyze Albion items.
+            Search and analyze Albion market prices.
           </p>
         </div>
 
@@ -76,7 +80,6 @@ export default function MarketPage() {
         <MarketDetails
           item={selectedItem}
         />
-
       </div>
     </main>
   );

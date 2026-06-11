@@ -1,20 +1,26 @@
-import {
-  ITEM_DATABASE,
-  ItemDefinition,
-} from "@/data/items";
+import { ITEM_DATABASE } from "@/data/items";
+import { ItemDefinition } from "@/types/item";
 
 export function searchItems(
-  query: string
+  query: string,
+  limit: number = 10
 ): ItemDefinition[] {
   if (!query.trim()) {
     return [];
   }
 
-  return ITEM_DATABASE.filter((item) =>
-    item.displayName
-      .toLowerCase()
-      .includes(query.toLowerCase())
-  );
+  const normalized = query.toLowerCase();
+
+  return ITEM_DATABASE
+    .filter((item) =>
+      item.displayName
+        .toLowerCase()
+        .includes(normalized)
+    )
+    .sort((a, b) =>
+      a.displayName.localeCompare(b.displayName)
+    )
+    .slice(0, limit);
 }
 
 export function getItemByUniqueName(

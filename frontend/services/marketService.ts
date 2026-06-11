@@ -2,20 +2,24 @@ import { getMarketPrices } from "@/services/albionApi";
 import { searchItems } from "@/services/itemSearchService";
 
 import { MarketItem } from "@/types/market";
-import { AlbionMarketResponse } from "@/types/albionApi";
+import { AlbionPrice } from "@/types/albion";
 
-function parseTier(uniqueName: string): number {
+function getTier(uniqueName: string): number {
   const match = uniqueName.match(/^T(\d)/);
 
-  if (!match) return 0;
+  if (!match) {
+    return 0;
+  }
 
   return Number(match[1]);
 }
 
-function parseEnchantment(uniqueName: string): number {
+function getEnchantment(uniqueName: string): number {
   const match = uniqueName.match(/@(\d)$/);
 
-  if (!match) return 0;
+  if (!match) {
+    return 0;
+  }
 
   return Number(match[1]);
 }
@@ -37,35 +41,41 @@ export async function searchMarket(
     (item) => item.uniqueName
   );
 
-  const apiData: AlbionMarketResponse[] =
+  const apiData: AlbionPrice[] =
     await getMarketPrices(itemIds);
 
-  return apiData.map((item, index) => ({
-    id: `${item.item_id}-${item.city}-${index}`,
-
-    uniqueName: item.item_id,
-
-    displayName:
+  return apiData.map((price, index) => {
+    const item =
       matches.find(
-        (x) => x.uniqueName === item.item_id
-      )?.displayName ?? item.item_id,
+        (x) => x.uniqueName === price.item_id
+      );
 
-    tier: parseTier(item.item_id),
+    return {
+      id: `${price.item_id}-${price.city}-${index}`,
 
-    enchantment: parseEnchantment(
-      item.item_id
-    ),
+      uniqueName: price.item_id,
 
-    quality: item.quality,
+      displayName:
+        item?.displayName ?? price.item_id,
 
-    city: item.city,
+      tier: getTier(price.item_id),
 
-    buyPrice: item.buy_price_max,
+      enchantment: getEnchantment(
+        price.item_id
+      ),
 
-    sellPrice: item.sell_price_min,
+      quality: price.quality,
 
-    demand: undefined,
+      city: price.city,
 
-    lastUpdated: item.sell_price_min_date,
-  }));
+      buyPrice: price.buy_price_max,
+
+      sellPrice: price.sell_price_min,
+
+      demand: undefined,
+
+      lastUpdated:
+        price.sell_price_min_date,
+    };
+  });
 }
