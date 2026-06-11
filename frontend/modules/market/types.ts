@@ -1,4 +1,4 @@
-export type MarketItem = {
+export interface MarketItem {
   id: string;
   name: string;
   tier: number;
@@ -6,4 +6,4 @@ export type MarketItem = {
   city: string;
   buyPrice: number;
   sellPrice: number;
-};
+}
