@@ -1,6 +1,6 @@
-import { ItemDefinition } from "@/types/item";
+const fs = require("fs");
 
-export const ITEM_DATABASE: ItemDefinition[] = [
+const items = [
   {
     uniqueName: "T4_BAG",
     displayName: "T4 Bag",
@@ -22,3 +22,10 @@ export const ITEM_DATABASE: ItemDefinition[] = [
     displayName: "T8 Bag",
   },
 ];
+
+fs.writeFileSync(
+  "./data/items.json",
+  JSON.stringify(items, null, 2)
+);
+
+console.log("items.json generated");
