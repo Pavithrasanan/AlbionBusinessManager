@@ -2,6 +2,8 @@ import { searchMarket } from "@/services/marketService";
 import { MarketOpportunity } from "@/types/opportunity";
 import { MarketItem } from "@/types/market";
 
+const MARKET_TAX = 0.04;
+
 export async function searchOpportunities(
   query: string
 ): Promise<MarketOpportunity[]> {
@@ -34,6 +36,7 @@ export async function searchOpportunities(
       continue;
     }
 
+    // Cheapest place to BUY
     const cheapestSell = validItems.reduce(
       (prev, curr) =>
         curr.sellPrice < prev.sellPrice
@@ -41,6 +44,7 @@ export async function searchOpportunities(
           : prev
     );
 
+    // Best place to SELL
     const highestBuy = validItems.reduce(
       (prev, curr) =>
         curr.buyPrice > prev.buyPrice
@@ -57,20 +61,32 @@ export async function searchOpportunities(
     }
 
     const estimatedTax = Math.round(
-      highestBuy.buyPrice * 0.04
+      highestBuy.buyPrice * MARKET_TAX
     );
 
     const netProfit =
       spread - estimatedTax;
 
-    const roi =
-      Number(
-        (
-          (netProfit /
-            cheapestSell.sellPrice) *
-          100
-        ).toFixed(2)
-      );
+    const roi = Number(
+      (
+        (netProfit /
+          cheapestSell.sellPrice) *
+        100
+      ).toFixed(2)
+    );
+
+    let recommendation:
+      | "BUY"
+      | "HOLD"
+      | "SKIP";
+
+    if (roi >= 15) {
+      recommendation = "BUY";
+    } else if (roi >= 8) {
+      recommendation = "HOLD";
+    } else {
+      recommendation = "SKIP";
+    }
 
     opportunities.push({
       uniqueName:
@@ -98,13 +114,18 @@ export async function searchOpportunities(
       netProfit,
 
       roi,
+
+      recommendation,
     });
   }
 
-  opportunities.sort(
-    (a, b) =>
-      b.netProfit - a.netProfit
-  );
+  opportunities.sort((a, b) => {
+    if (b.roi !== a.roi) {
+      return b.roi - a.roi;
+    }
+
+    return b.netProfit - a.netProfit;
+  });
 
   return opportunities;
 }

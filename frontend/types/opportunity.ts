@@ -15,4 +15,6 @@ export interface MarketOpportunity {
   netProfit: number;
 
   roi: number;
+
+  recommendation: "BUY" | "HOLD" | "SKIP";
 }

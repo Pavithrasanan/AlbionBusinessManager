@@ -11,17 +11,17 @@ import { MarketOpportunity } from "@/types/opportunity";
 export default function MarketAnalyzer() {
   const [search, setSearch] = useState("");
 
+  const [loading, setLoading] =
+    useState(false);
+
   const [opportunities, setOpportunities] =
     useState<MarketOpportunity[]>([]);
 
   const [selectedOpportunity, setSelectedOpportunity] =
     useState<MarketOpportunity | null>(null);
 
-  const [loading, setLoading] =
-    useState(false);
-
   useEffect(() => {
-    async function loadData() {
+    async function load() {
       if (!search.trim()) {
         setOpportunities([]);
         setSelectedOpportunity(null);
@@ -41,8 +41,8 @@ export default function MarketAnalyzer() {
         } else {
           setSelectedOpportunity(null);
         }
-      } catch (error) {
-        console.error(error);
+      } catch (err) {
+        console.error(err);
         setOpportunities([]);
         setSelectedOpportunity(null);
       } finally {
@@ -50,57 +50,57 @@ export default function MarketAnalyzer() {
       }
     }
 
-    loadData();
+    load();
   }, [search]);
 
   return (
-    <main className="min-h-screen bg-slate-950 p-8 text-white">
-      <div className="mx-auto max-w-7xl space-y-6">
+    <div className="space-y-6">
 
-        <div>
-          <h1 className="text-4xl font-bold">
-            📈 Market Analyzer
-          </h1>
+      <div>
 
-          <p className="mt-2 text-slate-400">
-            Find the best trading opportunities across Albion cities.
-          </p>
-        </div>
+        <h2 className="text-3xl font-bold">
+          📈 Market Analyzer
+        </h2>
 
-        <input
-          type="text"
-          value={search}
-          placeholder="Search item (e.g. T6 Bag)"
-          onChange={(e) =>
-            setSearch(e.target.value)
-          }
-          className="w-full rounded-lg border border-slate-700 bg-slate-900 p-3 outline-none"
-        />
-
-        {loading && (
-          <div className="text-slate-400">
-            Loading opportunities...
-          </div>
-        )}
-
-        {!loading && (
-          <>
-            <OpportunityTable
-              opportunities={opportunities}
-              onSelect={
-                setSelectedOpportunity
-              }
-            />
-
-            <OpportunityDetails
-              opportunity={
-                selectedOpportunity
-              }
-            />
-          </>
-        )}
+        <p className="mt-2 text-slate-400">
+          Find the best trading opportunities.
+        </p>
 
       </div>
-    </main>
+
+      <input
+        type="text"
+        value={search}
+        placeholder="Search item (Example: T6 Bag)"
+        onChange={(e) =>
+          setSearch(e.target.value)
+        }
+        className="w-full rounded-lg border border-slate-700 bg-slate-900 p-3"
+      />
+
+      {loading && (
+        <div className="rounded-lg bg-slate-900 p-4">
+          Loading...
+        </div>
+      )}
+
+      {!loading && (
+        <>
+          <OpportunityTable
+            opportunities={opportunities}
+            onSelect={
+              setSelectedOpportunity
+            }
+          />
+
+          <OpportunityDetails
+            opportunity={
+              selectedOpportunity
+            }
+          />
+        </>
+      )}
+
+    </div>
   );
 }
