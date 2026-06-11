@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import SearchBar from "./components/SearchBar";
 import Filters from "./components/Filters";
 import MarketTable from "./components/MarketTable";
+import MarketDetails from "./components/MarketDetails";
 
 import { searchMarket } from "@/services/marketService";
 import { MarketItem } from "@/types/market";
@@ -12,7 +13,10 @@ import { MarketItem } from "@/types/market";
 export default function MarketPage() {
   const [search, setSearch] = useState("");
   const [city, setCity] = useState("All");
+
   const [items, setItems] = useState<MarketItem[]>([]);
+  const [selectedItem, setSelectedItem] =
+    useState<MarketItem | null>(null);
 
   useEffect(() => {
     async function loadData() {
@@ -21,9 +25,18 @@ export default function MarketPage() {
       const filtered =
         city === "All"
           ? results
-          : results.filter((item) => item.city === city);
+          : results.filter(
+              (item) => item.city === city
+            );
 
       setItems(filtered);
+
+      if (
+        filtered.length > 0 &&
+        !selectedItem
+      ) {
+        setSelectedItem(filtered[0]);
+      }
     }
 
     loadData();
@@ -32,13 +45,14 @@ export default function MarketPage() {
   return (
     <main className="min-h-screen bg-slate-950 p-8 text-white">
       <div className="mx-auto max-w-7xl space-y-6">
+
         <div>
           <h1 className="text-4xl font-bold">
-            📊 Market
+            📊 Albion Market
           </h1>
 
           <p className="mt-2 text-slate-400">
-            Search and analyze market items.
+            Search and analyze Albion items.
           </p>
         </div>
 
@@ -54,7 +68,15 @@ export default function MarketPage() {
           />
         </div>
 
-        <MarketTable items={items} />
+        <MarketTable
+          items={items}
+          onSelect={setSelectedItem}
+        />
+
+        <MarketDetails
+          item={selectedItem}
+        />
+
       </div>
     </main>
   );

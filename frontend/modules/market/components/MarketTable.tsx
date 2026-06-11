@@ -1,12 +1,24 @@
+"use client";
+
 import { MarketItem } from "@/types/market";
 
 interface MarketTableProps {
   items: MarketItem[];
+  onSelect: (item: MarketItem) => void;
 }
 
 export default function MarketTable({
   items,
+  onSelect,
 }: MarketTableProps) {
+  if (items.length === 0) {
+    return (
+      <div className="rounded-lg border border-slate-700 bg-slate-900 p-6 text-center text-slate-400">
+        No items found.
+      </div>
+    );
+  }
+
   return (
     <div className="overflow-x-auto rounded-lg border border-slate-700">
       <table className="w-full text-left">
@@ -14,6 +26,7 @@ export default function MarketTable({
           <tr>
             <th className="p-3">Item</th>
             <th className="p-3">Tier</th>
+            <th className="p-3">Quality</th>
             <th className="p-3">City</th>
             <th className="p-3">Buy</th>
             <th className="p-3">Sell</th>
@@ -25,15 +38,24 @@ export default function MarketTable({
           {items.map((item) => (
             <tr
               key={item.id}
-              className="border-t border-slate-800"
+              onClick={() => onSelect(item)}
+              className="cursor-pointer border-t border-slate-800 hover:bg-slate-800"
             >
-              <td className="p-3">{item.name}</td>
+              <td className="p-3">
+                {item.displayName}
+              </td>
 
               <td className="p-3">
                 T{item.tier}.{item.enchantment}
               </td>
 
-              <td className="p-3">{item.city}</td>
+              <td className="p-3">
+                {item.quality}
+              </td>
+
+              <td className="p-3">
+                {item.city}
+              </td>
 
               <td className="p-3">
                 {item.buyPrice.toLocaleString()}

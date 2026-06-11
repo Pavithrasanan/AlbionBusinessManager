@@ -1,7 +1,7 @@
 const BASE_URL =
   "https://west.albion-online-data.com/api/v2/stats/prices";
 
-export async function fetchMarketPrices(
+export async function getMarketPrices(
   itemIds: string[],
   locations: string[] = [
     "Bridgewatch",
@@ -19,7 +19,9 @@ export async function fetchMarketPrices(
   const response = await fetch(url);
 
   if (!response.ok) {
-    throw new Error("Failed to fetch Albion market data");
+    throw new Error(
+      "Failed to fetch Albion market data"
+    );
   }
 
   return response.json();

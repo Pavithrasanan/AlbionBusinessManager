@@ -1,30 +1,45 @@
+"use client";
+
 interface FiltersProps {
   city: string;
   onCityChange: (city: string) => void;
 }
+
+const cities = [
+  "All",
+  "Bridgewatch",
+  "Martlock",
+  "Lymhurst",
+  "Fort Sterling",
+  "Thetford",
+  "Caerleon",
+];
 
 export default function Filters({
   city,
   onCityChange,
 }: FiltersProps) {
   return (
-    <div className="w-full">
-      <label className="mb-2 block text-sm font-medium text-slate-300">
-        🏙 City
+    <div>
+      <label className="mb-2 block text-sm font-medium">
+        City
       </label>
 
       <select
         value={city}
-        onChange={(e) => onCityChange(e.target.value)}
-        className="w-full rounded-lg border border-slate-700 bg-slate-900 p-3 text-white outline-none focus:border-blue-500"
+        onChange={(e) =>
+          onCityChange(e.target.value)
+        }
+        className="w-full rounded-lg border border-slate-700 bg-slate-900 p-3 text-white"
       >
-        <option value="All">All Cities</option>
-        <option value="Bridgewatch">Bridgewatch</option>
-        <option value="Martlock">Martlock</option>
-        <option value="Lymhurst">Lymhurst</option>
-        <option value="Fort Sterling">Fort Sterling</option>
-        <option value="Thetford">Thetford</option>
-        <option value="Caerleon">Caerleon</option>
+        {cities.map((c) => (
+          <option
+            key={c}
+            value={c}
+          >
+            {c}
+          </option>
+        ))}
       </select>
     </div>
   );
