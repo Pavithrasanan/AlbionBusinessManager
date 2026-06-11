@@ -2,6 +2,10 @@ export interface MarketOpportunity {
   uniqueName: string;
   displayName: string;
 
+  tier: number;
+  enchantment: number;
+  quality: number;
+
   buyCity: string;
   buyPrice: number;
 

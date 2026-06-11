@@ -87,36 +87,51 @@ export async function searchOpportunities(
     } else {
       recommendation = "SKIP";
     }
+    console.log({
+  uniqueName: cheapestSell.uniqueName,
+  tier: cheapestSell.tier,
+  enchantment: cheapestSell.enchantment,
+  quality: cheapestSell.quality,
+});
 
     opportunities.push({
-      uniqueName:
-        cheapestSell.uniqueName,
+  uniqueName:
+    cheapestSell.uniqueName,
 
-      displayName:
-        cheapestSell.displayName,
+  displayName:
+    cheapestSell.displayName,
 
-      buyCity:
-        cheapestSell.city,
+  tier:
+    cheapestSell.tier,
 
-      buyPrice:
-        cheapestSell.sellPrice,
+  enchantment:
+    cheapestSell.enchantment,
 
-      sellCity:
-        highestBuy.city,
+  quality:
+    cheapestSell.quality,
 
-      sellPrice:
-        highestBuy.buyPrice,
+  buyCity:
+    cheapestSell.city,
 
-      spread,
+  buyPrice:
+    cheapestSell.sellPrice,
 
-      estimatedTax,
+  sellCity:
+    highestBuy.city,
 
-      netProfit,
+  sellPrice:
+    highestBuy.buyPrice,
 
-      roi,
+  spread,
 
-      recommendation,
-    });
+  estimatedTax,
+
+  netProfit,
+
+  roi,
+
+  recommendation,
+});
   }
 
   opportunities.sort((a, b) => {

@@ -30,6 +30,17 @@ export default function OpportunityDetails({
       <h2 className="text-3xl font-bold">
         {opportunity.displayName}
       </h2>
+      <p className="mt-2 text-slate-400">
+  Tier: T{opportunity.tier}.
+  {Math.max(
+    0,
+    opportunity.enchantment - 1
+  )}
+</p>
+
+<p className="text-slate-400">
+  Quality: {opportunity.quality}
+</p>
 
       <div className="mt-8 grid gap-4 md:grid-cols-2">
 
@@ -105,9 +116,24 @@ export default function OpportunityDetails({
             </p>
           </div>
 
-          <div className="rounded-full bg-green-700 px-4 py-2 font-semibold">
-            🟢 BUY
-          </div>
+          <div
+  className={`rounded-full px-4 py-2 font-semibold ${
+    opportunity.recommendation === "BUY"
+      ? "bg-green-700"
+      : opportunity.recommendation ===
+        "HOLD"
+      ? "bg-yellow-700"
+      : "bg-red-700"
+  }`}
+>
+  {opportunity.recommendation ===
+  "BUY"
+    ? "🟢 BUY"
+    : opportunity.recommendation ===
+      "HOLD"
+    ? "🟡 HOLD"
+    : "🔴 SKIP"}
+</div>
 
         </div>
 
