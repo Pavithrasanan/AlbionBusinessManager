@@ -1,60 +1,32 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import SearchBar from "./components/SearchBar";
 import Filters from "./components/Filters";
 import MarketTable from "./components/MarketTable";
 
-
-
+import { searchMarket } from "@/services/marketService";
 import { MarketItem } from "@/types/market";
 
 export default function MarketPage() {
   const [search, setSearch] = useState("");
   const [city, setCity] = useState("All");
+  const [items, setItems] = useState<MarketItem[]>([]);
 
-  const items: MarketItem[] = [
-    {
-      id: "1",
-      name: "T4 Bag",
-      tier: 4,
-      enchantment: 0,
-      city: "Bridgewatch",
-      buyPrice: 1000,
-      sellPrice: 1200,
-    },
-    {
-      id: "2",
-      name: "T5 Bag",
-      tier: 5,
-      enchantment: 0,
-      city: "Bridgewatch",
-      buyPrice: 2500,
-      sellPrice: 2900,
-    },
-    {
-      id: "3",
-      name: "T6 Bag",
-      tier: 6,
-      enchantment: 0,
-      city: "Martlock",
-      buyPrice: 6200,
-      sellPrice: 7100,
-    },
-  ];
+  useEffect(() => {
+    async function loadData() {
+      const results = await searchMarket(search);
 
-  const filteredItems = useMemo(() => {
-    return items.filter((item) => {
-      const matchesSearch = item.name
-        .toLowerCase()
-        .includes(search.toLowerCase());
+      const filtered =
+        city === "All"
+          ? results
+          : results.filter((item) => item.city === city);
 
-      const matchesCity =
-        city === "All" || item.city === city;
+      setItems(filtered);
+    }
 
-      return matchesSearch && matchesCity;
-    });
+    loadData();
   }, [search, city]);
 
   return (
@@ -82,7 +54,7 @@ export default function MarketPage() {
           />
         </div>
 
-        <MarketTable items={filteredItems} />
+        <MarketTable items={items} />
       </div>
     </main>
   );
