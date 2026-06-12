@@ -1,5 +1,5 @@
-import CraftingPage from "@/modules/crafting/CraftingPage";
+import CraftingCalculator from "@/modules/crafting/CraftingCalculator";
 
 export default function Page() {
-  return <CraftingPage />;
+  return <CraftingCalculator />;
 }

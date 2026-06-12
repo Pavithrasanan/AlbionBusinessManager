@@ -1,20 +1,28 @@
 export default function QuickStats() {
   const cards = [
     {
-      title: "💰 Silver",
+      icon: "💰",
+      title: "Silver",
       value: "0",
+      color: "text-yellow-400",
     },
     {
-      title: "⚡ Focus",
+      icon: "⚡",
+      title: "Focus",
       value: "30,000",
+      color: "text-blue-400",
     },
     {
-      title: "📈 Profit Today",
+      icon: "📈",
+      title: "Profit Today",
       value: "0",
+      color: "text-green-400",
     },
     {
-      title: "🏝 Islands",
+      icon: "🏝️",
+      title: "Islands",
       value: "0",
+      color: "text-purple-400",
     },
   ];
 
@@ -23,15 +31,27 @@ export default function QuickStats() {
       {cards.map((card) => (
         <div
           key={card.title}
-          className="rounded-xl border border-slate-800 bg-slate-900 p-5"
+          className="rounded-xl border border-slate-800 bg-slate-900 p-5 transition hover:border-blue-500 hover:bg-slate-800"
         >
-          <h3 className="text-slate-400">
-            {card.title}
-          </h3>
+          <div className="flex items-center justify-between">
+            <span className="text-3xl">
+              {card.icon}
+            </span>
 
-          <h1 className="mt-2 text-3xl font-bold">
+            <span
+              className={`text-sm font-semibold ${card.color}`}
+            >
+              LIVE
+            </span>
+          </div>
+
+          <p className="mt-4 text-sm text-slate-400">
+            {card.title}
+          </p>
+
+          <h2 className="mt-1 text-3xl font-bold">
             {card.value}
-          </h1>
+          </h2>
         </div>
       ))}
     </div>

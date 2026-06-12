@@ -8,8 +8,11 @@ export async function searchOpportunities(
   query: string
 ): Promise<MarketOpportunity[]> {
   const marketItems = await searchMarket(query);
+  console.log("QUERY:", query);
+console.log("MARKET ITEMS:", marketItems.length);
+console.log(marketItems.slice(0, 10));
 
-  if (marketItems.length === 0) {
+  if (!marketItems.length) {
     return [];
   }
 
@@ -26,39 +29,44 @@ export async function searchOpportunities(
   const opportunities: MarketOpportunity[] = [];
 
   for (const [, items] of grouped) {
-    const validItems = items.filter(
-      (item) =>
-        item.buyPrice > 0 &&
-        item.sellPrice > 0
-    );
-
-    if (validItems.length < 2) {
+    if (items.length < 2) {
       continue;
     }
 
-    // Cheapest place to BUY
-    const cheapestSell = validItems.reduce(
-      (prev, curr) =>
-        curr.sellPrice < prev.sellPrice
-          ? curr
-          : prev
+    const buyCandidates = items.filter(
+      (i) => i.sellPrice > 0
     );
 
-    // Best place to SELL
-    const highestBuy = validItems.reduce(
-      (prev, curr) =>
-        curr.buyPrice > prev.buyPrice
-          ? curr
-          : prev
+    const sellCandidates = items.filter(
+      (i) => i.buyPrice > 0
     );
+
+    if (
+      buyCandidates.length === 0 ||
+      sellCandidates.length === 0
+    ) {
+      continue;
+    }
+
+    const cheapestSell = buyCandidates.reduce(
+      (a, b) =>
+        a.sellPrice < b.sellPrice ? a : b
+    );
+
+    const highestBuy = sellCandidates.reduce(
+      (a, b) =>
+        a.buyPrice > b.buyPrice ? a : b
+    );
+
+    if (
+      cheapestSell.city === highestBuy.city
+    ) {
+      continue;
+    }
 
     const spread =
       highestBuy.buyPrice -
       cheapestSell.sellPrice;
-
-    if (spread <= 0) {
-      continue;
-    }
 
     const estimatedTax = Math.round(
       highestBuy.buyPrice * MARKET_TAX
@@ -67,71 +75,68 @@ export async function searchOpportunities(
     const netProfit =
       spread - estimatedTax;
 
-    const roi = Number(
-      (
-        (netProfit /
-          cheapestSell.sellPrice) *
-        100
-      ).toFixed(2)
-    );
+    const roi =
+      cheapestSell.sellPrice > 0
+        ? Number(
+            (
+              (netProfit /
+                cheapestSell.sellPrice) *
+              100
+            ).toFixed(2)
+          )
+        : 0;
 
     let recommendation:
       | "BUY"
       | "HOLD"
       | "SKIP";
 
-    if (roi >= 15) {
+    if (roi >= 10) {
       recommendation = "BUY";
-    } else if (roi >= 8) {
+    } else if (roi >= 3) {
       recommendation = "HOLD";
     } else {
       recommendation = "SKIP";
     }
-    console.log({
-  uniqueName: cheapestSell.uniqueName,
-  tier: cheapestSell.tier,
-  enchantment: cheapestSell.enchantment,
-  quality: cheapestSell.quality,
-});
 
     opportunities.push({
-  uniqueName:
-    cheapestSell.uniqueName,
+      uniqueName:
+        cheapestSell.uniqueName,
 
-  displayName:
-    cheapestSell.displayName,
+      displayName:
+        cheapestSell.displayName,
 
-  tier:
-    cheapestSell.tier,
+      tier:
+        cheapestSell.tier,
 
-  enchantment:
-    cheapestSell.enchantment,
+      enchantment:
+        cheapestSell.enchantment,
 
-  quality:
-    cheapestSell.quality,
+      quality:
+        cheapestSell.quality,
 
-  buyCity:
-    cheapestSell.city,
+      buyCity:
+        cheapestSell.city,
 
-  buyPrice:
-    cheapestSell.sellPrice,
+      buyPrice:
+        cheapestSell.sellPrice,
 
-  sellCity:
-    highestBuy.city,
+      sellCity:
+        highestBuy.city,
 
-  sellPrice:
-    highestBuy.buyPrice,
+      sellPrice:
+        highestBuy.buyPrice,
 
-  spread,
+      spread,
 
-  estimatedTax,
+      estimatedTax,
 
-  netProfit,
+      netProfit,
 
-  roi,
+      roi,
 
-  recommendation,
-});
+      recommendation,
+    });
   }
 
   opportunities.sort((a, b) => {
@@ -141,6 +146,7 @@ export async function searchOpportunities(
 
     return b.netProfit - a.netProfit;
   });
-
+  console.log("OPPORTUNITIES:", opportunities.length);
+console.log(opportunities);
   return opportunities;
 }

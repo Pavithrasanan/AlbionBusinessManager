@@ -1,8 +1,5 @@
-import { getMarketPrices } from "@/services/albionApi";
 import { searchItems } from "@/services/itemSearchService";
-
 import { MarketItem } from "@/types/market";
-import { AlbionPrice } from "@/types/albion";
 
 function parseTier(uniqueName: string): number {
   const match = uniqueName.match(/^T(\d)/);
@@ -11,7 +8,7 @@ function parseTier(uniqueName: string): number {
 
 function parseEnchantment(uniqueName: string): number {
   const match = uniqueName.match(/@(\d)$/);
-  return match ? Number(match[1]) : 1;
+  return match ? Number(match[1]) : 0;
 }
 
 export async function searchMarket(
@@ -21,71 +18,103 @@ export async function searchMarket(
     return [];
   }
 
-  const matches = searchItems(query);
+  // Find matching item definitions
+  const definitions = searchItems(query, 20);
 
-  if (matches.length === 0) {
+  if (definitions.length === 0) {
     return [];
   }
 
-  const apiData = (await getMarketPrices(
-    matches.map((item) => item.uniqueName)
-  )) as AlbionPrice[];
+  // Fast lookup
+  const definitionMap = new Map(
+    definitions.map((item) => [
+      item.uniqueName,
+      item,
+    ])
+  );
 
-  const marketItems: MarketItem[] = [];
+  // Fetch backend data
+  const response = await fetch(
+    "http://localhost:5000/api/items"
+  );
 
-  for (const price of apiData) {
-    // Ignore invalid market entries
-    if (
-      price.buy_price_max <= 0 ||
-      price.sell_price_min <= 0
-    ) {
+  if (!response.ok) {
+    throw new Error(
+      "Failed to fetch market data"
+    );
+  }
+
+  const json = await response.json();
+  const rows = json.data ?? [];
+
+  const results: MarketItem[] = [];
+
+  for (const row of rows) {
+    const definition =
+      definitionMap.get(
+        row.unique_name
+      );
+
+    if (!definition) {
       continue;
     }
 
-    const definition = matches.find(
-      (item) =>
-        item.uniqueName === price.item_id
-    );
+    results.push({
+      id: `${row.unique_name}-${row.city}-${row.quality}`,
 
-    marketItems.push({
-      id: `${price.item_id}-${price.city}-${price.quality}`,
-
-      uniqueName: price.item_id,
+      uniqueName: row.unique_name,
 
       displayName:
-        definition?.displayName ??
-        price.item_id,
+        definition.displayName,
 
-      tier: parseTier(price.item_id),
-
-      enchantment: parseEnchantment(
-        price.item_id
+      tier: parseTier(
+        row.unique_name
       ),
 
-      quality: price.quality,
+      enchantment:
+        parseEnchantment(
+          row.unique_name
+        ),
 
-      city: price.city,
+      quality:
+        row.quality ?? 1,
 
-      buyPrice: price.buy_price_max,
+      city:
+        row.city ?? "Unknown",
 
-      sellPrice: price.sell_price_min,
+      buyPrice:
+        row.buy_price ?? 0,
+
+      sellPrice:
+        row.sell_price ?? 0,
 
       demand: undefined,
 
       lastUpdated:
-        price.sell_price_min_date,
+        row.updated_at,
     });
   }
 
-  marketItems.sort((a, b) => {
-    const spreadA =
+  // Sort by display name first,
+  // then highest profit
+  results.sort((a, b) => {
+    if (
+      a.displayName !==
+      b.displayName
+    ) {
+      return a.displayName.localeCompare(
+        b.displayName
+      );
+    }
+
+    const profitA =
       a.sellPrice - a.buyPrice;
 
-    const spreadB =
+    const profitB =
       b.sellPrice - b.buyPrice;
 
-    return spreadB - spreadA;
+    return profitB - profitA;
   });
 
-  return marketItems;
+  return results;
 }

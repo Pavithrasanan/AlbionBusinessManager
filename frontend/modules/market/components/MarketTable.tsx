@@ -13,65 +13,112 @@ export default function MarketTable({
 }: MarketTableProps) {
   if (items.length === 0) {
     return (
-      <div className="rounded-lg border border-slate-700 bg-slate-900 p-6 text-center text-slate-400">
-        No items found.
+      <div className="rounded-xl border border-slate-700 bg-slate-900 p-10 text-center text-slate-400">
+        📦 Search and select an item to view market prices.
       </div>
     );
   }
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-slate-700">
-      <table className="w-full text-left">
-        <thead className="bg-slate-900">
-          <tr>
-            <th className="p-3">Item</th>
-            <th className="p-3">Tier</th>
-            <th className="p-3">Quality</th>
-            <th className="p-3">City</th>
-            <th className="p-3">Buy</th>
-            <th className="p-3">Sell</th>
-            <th className="p-3">Profit</th>
-          </tr>
-        </thead>
+    <div className="rounded-xl border border-slate-700 bg-slate-900 overflow-hidden shadow-lg">
 
-        <tbody>
-          {items.map((item) => (
-            <tr
-              key={item.id}
-              onClick={() => onSelect(item)}
-              className="cursor-pointer border-t border-slate-800 hover:bg-slate-800"
-            >
-              <td className="p-3">
-                {item.displayName}
-              </td>
+      <div className="flex items-center justify-between border-b border-slate-700 bg-slate-800 px-4 py-3">
 
-              <td className="p-3">
-                T{item.tier}.{Math.max(0, item.enchantment - 1)}
-              </td>
+        <h2 className="text-xl font-bold">
+          Market Prices
+        </h2>
 
-              <td className="p-3">
-                {item.quality}
-              </td>
+        <span className="rounded bg-slate-700 px-3 py-1 text-sm">
+          {items.length} Cities
+        </span>
 
-              <td className="p-3">
-                {item.city}
-              </td>
+      </div>
 
-              <td className="p-3">
-                {item.buyPrice.toLocaleString()}
-              </td>
+      <div className="max-h-[700px] overflow-y-auto">
 
-              <td className="p-3">
-                {item.sellPrice.toLocaleString()}
-              </td>
+        <table className="w-full">
 
-              <td className="p-3 font-semibold text-green-400">
-                {(item.sellPrice - item.buyPrice).toLocaleString()}
-              </td>
+          <thead className="sticky top-0 bg-slate-800 text-slate-300">
+
+            <tr>
+
+              <th className="p-3 text-left">
+                City
+              </th>
+
+              <th className="p-3 text-right">
+                Buy Order
+              </th>
+
+              <th className="p-3 text-right">
+                Sell Order
+              </th>
+
+              <th className="p-3 text-right">
+                Profit
+              </th>
+
+              <th className="p-3 text-center">
+                Status
+              </th>
+
             </tr>
-          ))}
-        </tbody>
-      </table>
+
+          </thead>
+
+          <tbody>
+
+            {items.map((item) => {
+              const profit =
+                item.sellPrice -
+                item.buyPrice;
+
+              const profitable =
+                profit >= 0;
+
+              return (
+                <tr
+                  key={item.id}
+                  onClick={() =>
+                    onSelect(item)
+                  }
+                  className="cursor-pointer border-b border-slate-800 transition hover:bg-slate-800"
+                >
+                  <td className="p-3 font-semibold">
+                    {item.city}
+                  </td>
+
+                  <td className="p-3 text-right">
+                    {item.buyPrice.toLocaleString()}
+                  </td>
+
+                  <td className="p-3 text-right">
+                    {item.sellPrice.toLocaleString()}
+                  </td>
+
+                  <td
+                    className={`p-3 text-right font-bold ${
+                      profitable
+                        ? "text-green-400"
+                        : "text-red-400"
+                    }`}
+                  >
+                    {profit.toLocaleString()}
+                  </td>
+
+                  <td className="p-3 text-center text-xl">
+                    {profitable ? "🟢" : "🔴"}
+                  </td>
+                </tr>
+              );
+            })}
+
+          </tbody>
+
+        </table>
+
+      </div>
+
     </div>
   );
 }
