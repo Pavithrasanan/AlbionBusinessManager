@@ -1,4 +1,3 @@
-
 import sqlite3 from "sqlite3";
 import path from "path";
 
@@ -32,12 +31,34 @@ function initializeDatabase() {
   db.serialize(() => {
     db.run("PRAGMA foreign_keys = ON;");
 
-    // ===========================
-    // Tracked Items
-    // ===========================
+    // =====================================
+    // MASTER ITEMS
+    // =====================================
+
+    db.run(`
+      CREATE TABLE IF NOT EXISTS items (
+
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+        unique_name TEXT UNIQUE NOT NULL,
+
+        display_name TEXT,
+
+        category TEXT,
+
+        tier INTEGER,
+
+        enchantment INTEGER DEFAULT 0
+      )
+    `);
+
+    // =====================================
+    // TRACKED ITEMS
+    // =====================================
 
     db.run(`
       CREATE TABLE IF NOT EXISTS tracked_items (
+
         id INTEGER PRIMARY KEY AUTOINCREMENT,
 
         unique_name TEXT UNIQUE NOT NULL,
@@ -49,30 +70,59 @@ function initializeDatabase() {
         category TEXT
       )
     `);
-    // ===========================
-// Master Items
-// ===========================
 
-db.run(`
-  CREATE TABLE IF NOT EXISTS items (
+    // =====================================
+    // RECIPES
+    // =====================================
 
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    db.run(`
+CREATE TABLE IF NOT EXISTS recipes (
 
-    unique_name TEXT UNIQUE NOT NULL,
+id INTEGER PRIMARY KEY AUTOINCREMENT,
 
-    display_name TEXT,
+item_unique_name TEXT UNIQUE NOT NULL,
 
-    category TEXT,
+display_name TEXT,
 
-    tier INTEGER,
+craft_amount INTEGER DEFAULT 1,
 
-    enchantment INTEGER DEFAULT 0
-  )
-`);
+focus_cost INTEGER DEFAULT 0
+)
+    `);
 
-    // ===========================
-    // Latest Market State
-    // ===========================
+    // =====================================
+    // RECIPE INGREDIENTS
+    // =====================================
+
+    db.run(`
+      CREATE TABLE IF NOT EXISTS recipe_ingredients (
+
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+        recipe_item_unique_name TEXT NOT NULL,
+
+        ingredient_item_unique_name TEXT NOT NULL,
+
+        quantity INTEGER NOT NULL
+      )
+    `);
+
+    // =====================================
+    // CRAFTING STATIONS
+    // =====================================
+
+    db.run(`
+      CREATE TABLE IF NOT EXISTS crafting_stations (
+
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+        name TEXT UNIQUE NOT NULL
+      )
+    `);
+
+    // =====================================
+    // LATEST MARKET DATA
+    // =====================================
 
     db.run(`
       CREATE TABLE IF NOT EXISTS items_latest (
@@ -89,7 +139,7 @@ db.run(`
 
         sell_price INTEGER NOT NULL,
 
-        updated_at TEXT,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
         UNIQUE(
           unique_name,
@@ -99,9 +149,9 @@ db.run(`
       )
     `);
 
-    // ===========================
-    // History
-    // ===========================
+    // =====================================
+    // MARKET HISTORY
+    // =====================================
 
     db.run(`
       CREATE TABLE IF NOT EXISTS market_history (
@@ -122,124 +172,58 @@ db.run(`
         DEFAULT CURRENT_TIMESTAMP
       )
     `);
-    // ===========================
-// Market Statistics
-// ===========================
 
-db.run(`
-CREATE TABLE IF NOT EXISTS market_statistics (
+    // =====================================
+    // MARKET STATISTICS
+    // =====================================
 
-id INTEGER PRIMARY KEY AUTOINCREMENT,
+    db.run(`
+      CREATE TABLE IF NOT EXISTS market_statistics (
 
-unique_name TEXT NOT NULL,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
 
-city TEXT NOT NULL,
+        unique_name TEXT NOT NULL,
 
-quality INTEGER NOT NULL,
+        city TEXT NOT NULL,
 
-avg_buy_24h REAL DEFAULT 0,
+        quality INTEGER NOT NULL,
 
-avg_sell_24h REAL DEFAULT 0,
+        avg_buy_24h REAL DEFAULT 0,
 
-avg_buy_7d REAL DEFAULT 0,
+        avg_sell_24h REAL DEFAULT 0,
 
-avg_sell_7d REAL DEFAULT 0,
+        avg_buy_7d REAL DEFAULT 0,
 
-avg_buy_30d REAL DEFAULT 0,
+        avg_sell_7d REAL DEFAULT 0,
 
-avg_sell_30d REAL DEFAULT 0,
+        avg_buy_30d REAL DEFAULT 0,
 
-min_buy REAL DEFAULT 0,
+        avg_sell_30d REAL DEFAULT 0,
 
-max_sell REAL DEFAULT 0,
+        min_buy REAL DEFAULT 0,
 
-snapshots INTEGER DEFAULT 0,
+        max_sell REAL DEFAULT 0,
 
-trend TEXT DEFAULT 'UNKNOWN',
+        snapshots INTEGER DEFAULT 0,
 
-score REAL DEFAULT 0,
+        trend TEXT DEFAULT 'UNKNOWN',
 
-updated_at DATETIME
-DEFAULT CURRENT_TIMESTAMP,
+        score REAL DEFAULT 0,
 
-UNIQUE(
-unique_name,
-city,
-quality
-)
+        updated_at DATETIME
+        DEFAULT CURRENT_TIMESTAMP,
 
-)
-`);
-// ===========================
-// Recipes
-// ===========================
+        UNIQUE(
+          unique_name,
+          city,
+          quality
+        )
+      )
+    `);
 
-db.run(`
-CREATE TABLE IF NOT EXISTS recipes (
-
-id INTEGER PRIMARY KEY AUTOINCREMENT,
-
-item_unique_name TEXT UNIQUE NOT NULL,
-
-display_name TEXT,
-
-craft_amount INTEGER DEFAULT 1,
-
-focus_cost INTEGER DEFAULT 0
-
-)
-`);
-// ===========================
-// Recipe Ingredients
-// ===========================
-
-db.run(`
-CREATE TABLE IF NOT EXISTS recipe_ingredients (
-
-id INTEGER PRIMARY KEY AUTOINCREMENT,
-
-recipe_item TEXT NOT NULL,
-
-ingredient_item TEXT NOT NULL,
-
-quantity INTEGER NOT NULL
-
-)
-`);
-// ===========================
-// Recipe Ingredients
-// ===========================
-
-db.run(`
-CREATE TABLE IF NOT EXISTS recipe_ingredients (
-
-id INTEGER PRIMARY KEY AUTOINCREMENT,
-
-recipe_item TEXT NOT NULL,
-
-ingredient_item TEXT NOT NULL,
-
-quantity INTEGER NOT NULL
-
-)
-`);
-// ===========================
-// Crafting Stations
-// ===========================
-
-db.run(`
-CREATE TABLE IF NOT EXISTS crafting_stations (
-
-id INTEGER PRIMARY KEY AUTOINCREMENT,
-
-name TEXT UNIQUE NOT NULL
-
-)
-`);
-
-    // ===========================
-    // Favorites
-    // ===========================
+    // =====================================
+    // FAVORITES
+    // =====================================
 
     db.run(`
       CREATE TABLE IF NOT EXISTS favorites (
@@ -250,9 +234,9 @@ name TEXT UNIQUE NOT NULL
       )
     `);
 
-    // ===========================
-    // Watchlist
-    // ===========================
+    // =====================================
+    // WATCHLIST
+    // =====================================
 
     db.run(`
       CREATE TABLE IF NOT EXISTS watchlist (
@@ -265,9 +249,9 @@ name TEXT UNIQUE NOT NULL
       )
     `);
 
-    // ===========================
-    // Settings
-    // ===========================
+    // =====================================
+    // SETTINGS
+    // =====================================
 
     db.run(`
       CREATE TABLE IF NOT EXISTS settings (
@@ -278,9 +262,29 @@ name TEXT UNIQUE NOT NULL
       )
     `);
 
-    // ===========================
-    // Indexes
-    // ===========================
+    // =====================================
+    // INDEXES
+    // =====================================
+
+    db.run(`
+      CREATE INDEX IF NOT EXISTS idx_items
+      ON items(unique_name)
+    `);
+
+    db.run(`
+      CREATE INDEX IF NOT EXISTS idx_tracked
+      ON tracked_items(enabled, priority)
+    `);
+
+    db.run(`
+      CREATE INDEX IF NOT EXISTS idx_recipe
+      ON recipes(item_unique_name)
+    `);
+
+    db.run(`
+      CREATE INDEX IF NOT EXISTS idx_recipe_ingredient
+      ON recipe_ingredients(recipe_item_unique_name)
+    `);
 
     db.run(`
       CREATE INDEX IF NOT EXISTS idx_latest
@@ -290,33 +294,6 @@ name TEXT UNIQUE NOT NULL
         quality
       )
     `);
-    db.run(`
-  CREATE INDEX IF NOT EXISTS idx_items
-  ON items(
-    unique_name
-  )
-`);
-db.run(`
-CREATE INDEX IF NOT EXISTS idx_statistics
-ON market_statistics(
-unique_name,
-city,
-quality
-)
-`);
-db.run(`
-CREATE INDEX IF NOT EXISTS idx_recipe
-ON recipes(
-item_unique_name
-)
-`);
-
-db.run(`
-CREATE INDEX IF NOT EXISTS idx_recipe_ing
-ON recipe_ingredients(
-recipe_item
-)
-`);
 
     db.run(`
       CREATE INDEX IF NOT EXISTS idx_history
@@ -327,10 +304,11 @@ recipe_item
     `);
 
     db.run(`
-      CREATE INDEX IF NOT EXISTS idx_tracked
-      ON tracked_items(
-        enabled,
-        priority
+      CREATE INDEX IF NOT EXISTS idx_statistics
+      ON market_statistics(
+        unique_name,
+        city,
+        quality
       )
     `);
 
@@ -339,4 +317,3 @@ recipe_item
     );
   });
 }
-

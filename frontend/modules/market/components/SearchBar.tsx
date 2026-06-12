@@ -30,16 +30,41 @@ export default function SearchBar({
   const wrapperRef =
     useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+ useEffect(() => {
+  async function loadSuggestions() {
     if (!value.trim()) {
       setSuggestions([]);
       return;
     }
 
-    setSuggestions(
-      searchItems(value, 20)
-    );
-  }, [value]);
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/search?q=${encodeURIComponent(
+          value
+        )}`
+      );
+
+      if (!response.ok) {
+        setSuggestions([]);
+        return;
+      }
+
+      const data = await response.json();
+
+      const suggestions = data.map((item: any) => ({
+        uniqueName: item.unique_name,
+        displayName: item.display_name,
+      }));
+
+      setSuggestions(suggestions);
+    } catch (err) {
+      console.error(err);
+      setSuggestions([]);
+    }
+  }
+
+  loadSuggestions();
+}, [value]);
 
   useEffect(() => {
     function handleClickOutside(

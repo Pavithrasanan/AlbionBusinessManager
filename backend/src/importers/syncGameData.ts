@@ -1,31 +1,21 @@
-import { ImportStatus } from "../types/importStatus";
+import { ItemImporter } from "./itemImporter";
+import { RecipeImporter } from "./recipes/recipeImporter";
+import { RecipeIngredientImporter } from "./recipes/recipeIngredientImporter";
 
 async function syncGameData() {
-  const status: ImportStatus = {
-    items: 0,
-    recipes: 0,
-    ingredients: 0,
-    startedAt: new Date(),
-  };
-
+  console.log("");
   console.log("================================");
   console.log("Albion Business Manager");
   console.log("================================");
 
-  console.log("Starting synchronization...");
-  console.log("");
+  await ItemImporter.run();
 
-  // download
-  // extract
-  // import items
-  // import recipes
-  // import ingredients
+  await RecipeImporter.run();
 
-  status.finishedAt = new Date();
+  await RecipeIngredientImporter.run();
 
   console.log("");
-  console.log("Synchronization finished");
-  console.log(status);
+  console.log("Synchronization Complete");
 }
 
 syncGameData().catch((err) => {

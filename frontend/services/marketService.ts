@@ -1,4 +1,3 @@
-import { searchItems } from "@/services/itemSearchService";
 import { MarketItem } from "@/types/market";
 
 function parseTier(uniqueName: string): number {
@@ -11,6 +10,14 @@ function parseEnchantment(uniqueName: string): number {
   return match ? Number(match[1]) : 0;
 }
 
+interface SearchResult {
+  unique_name: string;
+  display_name: string;
+  category: string | null;
+  tier: number | null;
+  enchantment: number;
+}
+
 export async function searchMarket(
   query: string
 ): Promise<MarketItem[]> {
@@ -18,22 +25,35 @@ export async function searchMarket(
     return [];
   }
 
-  // Find matching item definitions
-  const definitions = searchItems(query, 20);
+  // Search backend
+  const searchResponse = await fetch(
+    `http://localhost:5000/api/search?q=${encodeURIComponent(
+      query
+    )}`
+  );
+
+  if (!searchResponse.ok) {
+    throw new Error("Failed to search items");
+  }
+
+  const definitions: SearchResult[] =
+    await searchResponse.json();
 
   if (definitions.length === 0) {
     return [];
   }
 
-  // Fast lookup
-  const definitionMap = new Map(
+  const definitionMap = new Map<
+    string,
+    SearchResult
+  >(
     definitions.map((item) => [
-      item.uniqueName,
+      item.unique_name,
       item,
     ])
   );
 
-  // Fetch backend data
+  // Fetch market data
   const response = await fetch(
     "http://localhost:5000/api/items"
   );
@@ -65,13 +85,14 @@ export async function searchMarket(
       uniqueName: row.unique_name,
 
       displayName:
-        definition.displayName,
+        definition.display_name,
 
-      tier: parseTier(
-        row.unique_name
-      ),
+      tier:
+        definition.tier ??
+        parseTier(row.unique_name),
 
       enchantment:
+        definition.enchantment ??
         parseEnchantment(
           row.unique_name
         ),
@@ -95,13 +116,9 @@ export async function searchMarket(
     });
   }
 
-  // Sort by display name first,
-  // then highest profit
+  // Sort results
   results.sort((a, b) => {
-    if (
-      a.displayName !==
-      b.displayName
-    ) {
+    if (a.displayName !== b.displayName) {
       return a.displayName.localeCompare(
         b.displayName
       );
