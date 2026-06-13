@@ -1,158 +1,76 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-
-import {
-  searchItems,
-} from "@/services/itemSearchService";
-
+import { useEffect } from "react";
 import { ItemDefinition } from "@/types/item";
 
 interface SearchBarProps {
   value: string;
   onChange: (value: string) => void;
-  onSelect?: (
-    item: ItemDefinition
-  ) => void;
+  onResults: (items: ItemDefinition[]) => void;
+  onSelect?: (item: ItemDefinition) => void;
 }
 
 export default function SearchBar({
   value,
   onChange,
-  onSelect,
+  onResults,
 }: SearchBarProps) {
-  const [suggestions, setSuggestions] =
-    useState<ItemDefinition[]>([]);
+  useEffect(() => {
+    const controller = new AbortController();
 
-  const [open, setOpen] =
-    useState(false);
+    async function load() {
+      const query = value.trim();
 
-  const wrapperRef =
-    useRef<HTMLDivElement>(null);
-
- useEffect(() => {
-  async function loadSuggestions() {
-    if (!value.trim()) {
-      setSuggestions([]);
-      return;
-    }
-
-    try {
-      const response = await fetch(
-        `http://localhost:5000/api/search?q=${encodeURIComponent(
-          value
-        )}`
-      );
-
-      if (!response.ok) {
-        setSuggestions([]);
+      if (!query) {
+        onResults([]);
         return;
       }
 
-      const data = await response.json();
+      try {
+        const response = await fetch(
+          `http://localhost:5000/api/search?q=${encodeURIComponent(query)}`,
+          {
+            signal: controller.signal,
+          }
+        );
 
-      const suggestions = data.map((item: any) => ({
-        uniqueName: item.unique_name,
-        displayName: item.display_name,
-      }));
+        if (!response.ok) {
+          onResults([]);
+          return;
+        }
 
-      setSuggestions(suggestions);
-    } catch (err) {
-      console.error(err);
-      setSuggestions([]);
-    }
-  }
+        const data = await response.json();
 
-  loadSuggestions();
-}, [value]);
+        const results: ItemDefinition[] = data.map((item: any) => ({
+          uniqueName: item.unique_name,
+          displayName: item.display_name,
+        }));
 
-  useEffect(() => {
-    function handleClickOutside(
-      event: MouseEvent
-    ) {
-      if (
-        wrapperRef.current &&
-        !wrapperRef.current.contains(
-          event.target as Node
-        )
-      ) {
-        setOpen(false);
+        onResults(results);
+      } catch (err: any) {
+        if (err?.name === "AbortError") {
+          return;
+        }
+
+        console.error(err);
+        onResults([]);
       }
     }
 
-    document.addEventListener(
-      "mousedown",
-      handleClickOutside
-    );
+    load();
 
-    return () =>
-      document.removeEventListener(
-        "mousedown",
-        handleClickOutside
-      );
-  }, []);
+    return () => controller.abort();
+  }, [value, onResults]);
 
   return (
-    <div
-      className="relative"
-      ref={wrapperRef}
-    >
+    <div className="w-full">
       <input
         type="text"
         value={value}
         placeholder="Search Albion item..."
-        onFocus={() => setOpen(true)}
-        onChange={(e) => {
-          onChange(e.target.value);
-          setOpen(true);
-        }}
-        className="w-full rounded-lg border border-slate-700 bg-slate-900 p-3 text-white outline-none"
+        className="w-full rounded-lg border border-slate-700 bg-slate-900 p-3 text-white outline-none focus:border-blue-500"
+        onChange={(e) => onChange(e.target.value)}
       />
-
-      {open &&
-        suggestions.length > 0 && (
-          <div className="absolute z-50 mt-2 max-h-80 w-full overflow-y-auto rounded-lg border border-slate-700 bg-slate-900 shadow-lg">
-            {suggestions.map((item) => {
-              const image = `https://render.albiononline.com/v1/item/${item.uniqueName}.png`;
-
-              return (
-                <button
-                  key={item.uniqueName}
-                  type="button"
-                  onClick={() => {
-                    onSelect?.(item);
-
-                    onChange(
-                      item.displayName
-                    );
-
-                    setOpen(false);
-                    setSuggestions([]);
-                  }}
-                  className="flex w-full items-center gap-3 border-b border-slate-800 px-4 py-3 text-left hover:bg-slate-800"
-                >
-                  <img
-                    src={image}
-                    alt={
-                      item.displayName
-                    }
-                    className="h-10 w-10"
-                  />
-
-                  <div>
-                    <div className="font-medium">
-                      {item.displayName}
-                    </div>
-
-                    <div className="text-xs text-slate-400">
-                      {item.uniqueName}
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        )}
     </div>
   );
 }

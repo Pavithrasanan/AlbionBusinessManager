@@ -7,14 +7,15 @@ import { ItemDefinition } from "@/types/item";
 interface Props {
   items: ItemDefinition[];
   selected?: string;
+  imageUniqueName?: string;
   onSelect: (item: ItemDefinition) => void;
 }
-
 export default function ItemBrowser({
   items,
   selected,
+  imageUniqueName,
   onSelect,
-}: Props) {
+}: Props){
   // Remove duplicates
   const uniqueItems = items.filter(
     (item, index, self) =>
@@ -46,9 +47,18 @@ export default function ItemBrowser({
       <div className="max-h-[700px] overflow-y-auto p-2 space-y-2">
 
         {uniqueItems.map((item) => (
-  <ItemCard
+<ItemCard
   key={item.uniqueName}
-  uniqueName={item.uniqueName}
+  uniqueName={
+    selected === item.uniqueName
+      ? (imageUniqueName ??
+          item.imageUniqueName ??
+          item.defaultUniqueName ??
+          item.uniqueName)
+      : (item.imageUniqueName ??
+          item.defaultUniqueName ??
+          item.uniqueName)
+  }
   displayName={item.displayName}
   category={item.category}
   selected={

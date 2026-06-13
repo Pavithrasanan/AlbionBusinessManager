@@ -10,52 +10,17 @@ function parseEnchantment(uniqueName: string): number {
   return match ? Number(match[1]) : 0;
 }
 
-interface SearchResult {
-  unique_name: string;
-  display_name: string;
-  category: string | null;
-  tier: number | null;
-  enchantment: number;
-}
-
 export async function searchMarket(
-  query: string
+  uniqueName: string
 ): Promise<MarketItem[]> {
-  if (!query.trim()) {
+  if (!uniqueName.trim()) {
     return [];
   }
 
-  // Search backend
-  const searchResponse = await fetch(
-    `http://localhost:5000/api/search?q=${encodeURIComponent(
-      query
-    )}`
-  );
-
-  if (!searchResponse.ok) {
-    throw new Error("Failed to search items");
-  }
-
-  const definitions: SearchResult[] =
-    await searchResponse.json();
-
-  if (definitions.length === 0) {
-    return [];
-  }
-
-  const definitionMap = new Map<
-    string,
-    SearchResult
-  >(
-    definitions.map((item) => [
-      item.unique_name,
-      item,
-    ])
-  );
-
-  // Fetch market data
   const response = await fetch(
-    "http://localhost:5000/api/items"
+    `http://localhost:5000/api/items?uniqueName=${encodeURIComponent(
+      uniqueName
+    )}`
   );
 
   if (!response.ok) {
@@ -65,73 +30,32 @@ export async function searchMarket(
   }
 
   const json = await response.json();
+
   const rows = json.data ?? [];
 
-  const results: MarketItem[] = [];
+  return rows.map((row: any) => ({
+    id: `${row.unique_name}-${row.city}-${row.quality}`,
 
-  for (const row of rows) {
-    const definition =
-      definitionMap.get(
-        row.unique_name
-      );
+    uniqueName: row.unique_name,
 
-    if (!definition) {
-      continue;
-    }
+    displayName: row.unique_name,
 
-    results.push({
-      id: `${row.unique_name}-${row.city}-${row.quality}`,
+    tier: parseTier(row.unique_name),
 
-      uniqueName: row.unique_name,
+    enchantment: parseEnchantment(
+      row.unique_name
+    ),
 
-      displayName:
-        definition.display_name,
+    quality: row.quality,
 
-      tier:
-        definition.tier ??
-        parseTier(row.unique_name),
+    city: row.city,
 
-      enchantment:
-        definition.enchantment ??
-        parseEnchantment(
-          row.unique_name
-        ),
+    buyPrice: row.buy_price,
 
-      quality:
-        row.quality ?? 1,
+    sellPrice: row.sell_price,
 
-      city:
-        row.city ?? "Unknown",
+    demand: undefined,
 
-      buyPrice:
-        row.buy_price ?? 0,
-
-      sellPrice:
-        row.sell_price ?? 0,
-
-      demand: undefined,
-
-      lastUpdated:
-        row.updated_at,
-    });
-  }
-
-  // Sort results
-  results.sort((a, b) => {
-    if (a.displayName !== b.displayName) {
-      return a.displayName.localeCompare(
-        b.displayName
-      );
-    }
-
-    const profitA =
-      a.sellPrice - a.buyPrice;
-
-    const profitB =
-      b.sellPrice - b.buyPrice;
-
-    return profitB - profitA;
-  });
-
-  return results;
+    lastUpdated: row.updated_at,
+  }));
 }

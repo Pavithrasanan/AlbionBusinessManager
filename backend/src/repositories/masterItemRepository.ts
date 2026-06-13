@@ -117,4 +117,25 @@ export class MasterItemRepository {
       );
     });
   }
+static getAllUniqueNames(): Promise<string[]> {
+  return new Promise((resolve, reject) => {
+    db.all(
+      `
+      SELECT unique_name
+      FROM items
+      ORDER BY unique_name
+      `,
+      (err: any, rows: any[]) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+
+        resolve(
+          rows.map((r) => r.unique_name)
+        );
+      }
+    );
+  });
+}
 }

@@ -11,13 +11,25 @@ export default function MarketTable({
   items,
   onSelect,
 }: MarketTableProps) {
-  if (items.length === 0) {
-    return (
-      <div className="rounded-xl border border-slate-700 bg-slate-900 p-10 text-center text-slate-400">
-        📦 Search and select an item to view market prices.
-      </div>
-    );
-  }
+if (items.length === 0) {
+  return (
+    <div className="rounded-xl border border-slate-700 bg-slate-900 p-10 text-center">
+      <div className="text-6xl mb-4">📦</div>
+
+      <h2 className="text-xl font-bold text-white">
+        No market data found
+      </h2>
+
+      <p className="mt-3 text-slate-400">
+        This item currently has no entries in the database.
+      </p>
+
+      <p className="mt-1 text-slate-500 text-sm">
+        Try another tier or another item.
+      </p>
+    </div>
+  );
+}
 
   return (
     <div className="rounded-xl border border-slate-700 bg-slate-900 overflow-hidden shadow-lg">

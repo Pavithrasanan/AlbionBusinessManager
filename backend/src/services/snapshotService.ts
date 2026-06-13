@@ -9,6 +9,7 @@ import {
 import {
   HistoryRepository,
 } from "../repositories/historyRepository";
+import { MasterItemRepository } from "../repositories/masterItemRepository";
 
 export interface SnapshotResult {
   processed: number;
@@ -22,9 +23,28 @@ export async function takeSnapshot(): Promise<SnapshotResult> {
   let failed = 0;
 
   try {
-const trackedItems = (
-  await ItemRepository.getTrackedItems()
-).slice(0, 100);
+const trackedItems =
+  await MasterItemRepository.getAllUniqueNames();
+
+console.log(
+  "Tracked count:",
+  trackedItems.length
+);
+
+console.log(
+  "First 20 tracked items:"
+);
+
+console.log(
+  trackedItems.slice(0, 20)
+);
+  console.log("Tracked count:", trackedItems.length);
+console.log("First 20 tracked items:");
+console.log(trackedItems.slice(0, 20));
+console.log(
+  "Contains T2_BAG:",
+  trackedItems.includes("T2_BAG")
+);  
 
     if (trackedItems.length === 0) {
       return {
